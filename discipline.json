@@ -1,0 +1,13 @@
+{
+  "sessions": 0,
+  "violations": {
+    "skipped_classification": 0,
+    "claimed_done_without_verify": 0,
+    "touched_unrelated_code": 0,
+    "multiquestion_dump": 0,
+    "skipped_retro": 0
+  },
+  "streak": 0,
+  "last_retro": null,
+  "notes": "Copy this file to ~/.claude/discipline.json or your agent's equivalent directory."
+}
