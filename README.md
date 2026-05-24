@@ -1,67 +1,166 @@
-# Thinking Workflow — Agent Discipline System
+# Thinking Workflow — Agent Discipline Memory
 
-A self-enforcing behavioral framework for AI coding agents. Built from months of real agent sessions and two independent security reviews. Complements [auto-mode](https://github.com/LuVAxCiN/ClaudeCode-AutoMode) as the internal discipline layer — auto-mode handles tool-call safety classification; this handles *process adherence*.
+A self-enforcing behavioral framework for AI coding agents. Prevents the three most common agent failure modes: **skipping thinking**, **claiming completion without verification**, and **touching code outside the stated boundary.**
 
-## What It Does
+**Important:** This is a **memory file**, not a skill. Skills trigger on keywords. Memory loads at session start — always active, no trigger needed. Behavioral rules belong in memory.
 
-AI agents default to three failure modes: **skip thinking before coding**, **claim completion without verification**, and **touch code outside the stated change boundary**. This workflow prevents all three by making discipline a structured process rather than a request.
+## Quick Install
 
-## Architecture
+```bash
+# 1. Clone
+git clone https://github.com/LuVAxCiN/thinking-workflow.git
 
-```
-L0-L3 Task Router → Scales depth to complexity
-    │
-    ▼
-Key Principles → 10 immutable rules (safety first, verify before claim, consent doesn't transfer)
-    │
-    ▼
-Semantic Trigger → Intent detection instead of keyword matching. "You're being lazy" and "你跳步骤了" trigger the same retrospective — not by string match, by meaning.
-    │
-    ▼
-Retrospective Loop → Correction → Root cause → Mistake log → Workflow self-repairs
-    │
-    ▼
-Discipline Score → Quantified compliance, trend visible across sessions
+# 2. Copy to memory directory
+cp thinking-workflow/memory/thinking-workflow.md ~/.claude/projects/<your-project>/memory/
+cp thinking-workflow/discipline.json ~/.claude/
+
+# 3. Register in MEMORY.md
+echo "- [Thinking workflow](thinking-workflow.md) — L0-L3 scaled task pipeline" >> ~/.claude/projects/<your-project>/memory/MEMORY.md
+
+# 4. Restart Claude Code
 ```
 
-## Task Level Scaling
+**Claude Code Plugin Market (alternative):**
+```
+/plugin marketplace add LuVAxCiN/thinking-workflow
+```
 
-| Level | Scope | Steps |
-|-------|-------|-------|
-| **L0** | Question / read a file | Safety check → Understand → Answer |
-| **L1** | Edit / fix a bug | Safety → Understand → Confidence ≥90% → Only touch files in scope → Verify before claiming done |
-| **L2** | Feature / multi-file changes | Safety → Brainstorm (one question at a time) → Confidence → Plan → TDD → Minimal code → Verify + Run → Review |
-| **L3** | Full program / project | Full 15-step pipeline including boundary declaration, deep research, UI/UX design, multi-path evaluation, security review |
+Then manually copy the files to your memory directory using the steps above.
 
-## Installation
+## File Structure
 
-1. Copy `thinking-workflow.md` to your agent's memory directory
-2. Create `discipline.json` (template included)
-3. Install a permission classifier (recommended: [auto-mode](https://github.com/LuVAxCiN/ClaudeCode-AutoMode))
-4. Restart your agent
+```
+thinking-workflow/
+├── README.md                          ← You're reading this
+├── memory/
+│   └── thinking-workflow.md           ← The workflow itself (copy to memory/)
+└── discipline.json                    ← Score tracker (copy to ~/.claude/)
+```
 
-## Key Concepts
+## How It Works
 
-- **Iron Rule**: Think first. Safety → Understand → Design → Minimum code → Verify → Claim complete.
-- **Never skip because it's "too simple"**: The simplest tasks cause the most catastrophic failures when assumptions are wrong.
-- **Consent doesn't transfer**: Previous approval for X does NOT authorize Y.
-- **Evidence before claims**: Never say "done" or "should work" without running the verification.
-- **≥3 failures = architectural problem**: Stop. Discuss. Don't try a 4th blind fix.
+```
+Session Start
+    │
+    ▼
+┌──────────────────────────────────────┐
+│ Memory auto-loads thinking-workflow  │
+│ → Classify EVERY tool call           │
+│ → Never skip because "too simple"    │
+│ → Verify before saying "done"        │
+└──────────────────────────────────────┘
+    │
+    ▼
+Task arrives → L0-L3 Router → Depth scales to complexity
+    │
+    ├── L0: "What does this do?" → 3 steps
+    ├── L1: Bug fix → 5 steps
+    ├── L2: Feature → 8 steps
+    └── L3: Full project → 15 steps
+    │
+    ▼
+User corrects agent → Intent-based trigger
+    │
+    ▼
+Retrospective loop: analyze → record → prevent
+    │
+    ▼
+discipline.json: quantified compliance across sessions
+```
 
-## What Makes This Different
+## All Features
 
-1. **Semantic Trigger Detection**: Not keyword matching. When the user says something out of context, interpret the *intent* — is this "you're being lazy"? Works across languages and phrasings.
+### L0-L3 Depth-Scaled Pipeline
 
-2. **Self-Repair Loop**: Every correction feeds back into the workflow. The agent records why it failed, what rationalization it used, and updates the prevention table. The same excuse can't work twice.
+| Level | Scope | Steps | Overhead |
+|-------|-------|-------|----------|
+| **L0** | Question / read | 3 | ~0 tokens |
+| **L1** | Edit / fix | 5 | ~50 tokens |
+| **L2** | Feature / multi-file | 8 | ~200 tokens |
+| **L3** | Full project | 15 | ~500 tokens |
 
-3. **Quantified Discipline**: `discipline.json` tracks violations across sessions. Streak count, violation types, trend visible. Both the user and the agent can audit.
+The pipeline scales with the task — no one-size-fits-all checklist. Simple tasks don't get buried in process. Complex tasks don't get cowboy-coded.
 
-4. **Depth-Scaled**: Not a one-size-fits-all checklist. L0 tasks get 3 steps. L3 gets 15. The overhead matches the complexity.
+### 10 Immutable Principles
+
+1. **Safety first** — classify every tool call
+2. **Never skip because "too simple"** — simple things cause catastrophic failures
+3. **One question at a time** — don't dump multiple questions
+4. **Verify before claiming complete** — evidence before assertions
+5. **Consent doesn't transfer** — previous approval ≠ current approval
+6. **Don't touch unrelated code** — only files in stated boundary
+7. **Don't read files just written** — context still has them
+8. **Batch independent reads** — parallel tool calls
+9. **Search before guessing** — web search for unknowns
+10. **≥3 failures = stop** — architectural problem, not a fixing problem
+
+### Semantic Trigger Detection
+
+Not keyword matching. When the user says something out of context — across languages, across phrasings — the agent interprets *intent*:
+
+- "You're being lazy" / "你又偷懒了" / "跳步骤了吧" / "skipped again"
+- "Did you actually verify that?" / "验证了吗"
+- "Why did you touch that file?" / "这文件你也改了"
+
+All map to the same response: **immediate retrospective → root cause → mistak log → prevent recurrence.**
+
+### Retrospective Self-Repair Loop
+
+```
+User correction → Agent stops → Identifies broken rule
+    → Names the rationalization ("I thought it was too simple")
+    → Records lesson in Mistake Log
+    → Same excuse cannot work twice
+    ↑_____________________________________________|
+```
+
+### Quantified Discipline Tracking
+
+`discipline.json` tracks violations across sessions:
+
+```json
+{
+  "sessions": 24,
+  "violations": {
+    "skipped_classification": 3,
+    "claimed_done_without_verify": 5,
+    "touched_unrelated_code": 2
+  },
+  "streak": 7
+}
+```
+
+Gives both the user and the agent visibility into whether discipline is improving or degrading.
+
+### Checkpoints
+
+Three explicit user confirmation gates in L2/L3:
+- After design presentation
+- After implementation plan
+- Before merge / publish
+
+## auto-mode alone vs auto-mode + thinking-workflow
+
+| Scenario | auto-mode only | auto-mode + thinking-workflow |
+|----------|---------------|-------------------------------|
+| `rm -rf /` | Blocked by hook | Blocked by hook |
+| `curl \| sh` | Blocked by hook | Blocked by hook |
+| Agent writes file outside project | Classified (skill layer) | Classified + principle #6 forbids it |
+| Agent says "done" without testing | Nothing stops it | Pre-completion audit catches it |
+| Agent asks 5 questions at once | Nothing stops it | Principle #3 flagges it |
+| Agent changes variable name "while there" | Nothing stops it | Principle #6 catches scope creep |
+| Agent claims confidence without checking | Nothing stops it | Confidence gate (≥90%) enforced |
+| Agent uses the same bad excuse twice | Nothing stops it | Mistake Log blocks repeats |
+| User says "你又偷懒了" | No special behavior | Immediate retrospective |
+| Three consecutive denials | Circuit breaker trips | Circuit breaker trips |
+| Cross-session trend | Not tracked | discipline.json shows streak |
+
+**Bottom line:** auto-mode handles *what you can and can't do.* thinking-workflow handles *how you do it.* One without the other leaves a gap.
 
 ## Requirements
 
-- An AI coding agent (Claude Code, Cursor, Codex, Copilot, etc.)
-- A permission classifier (recommended: [auto-mode](https://github.com/LuVAxCiN/ClaudeCode-AutoMode))
+- Claude Code or any AI coding agent with memory support
+- Recommended: [auto-mode](https://github.com/LuVAxCiN/ClaudeCode-AutoMode) for permission classification
 
 ## License
 
