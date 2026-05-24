@@ -139,21 +139,28 @@ Three explicit user confirmation gates in L2/L3:
 - After implementation plan
 - Before merge / publish
 
-## auto-mode alone vs auto-mode + thinking-workflow
+## Full Comparison — All Four Configurations
 
-| Scenario | auto-mode only | auto-mode + thinking-workflow |
-|----------|---------------|-------------------------------|
-| `rm -rf /` | Blocked by hook | Blocked by hook |
-| `curl \| sh` | Blocked by hook | Blocked by hook |
-| Agent writes file outside project | Classified (skill layer) | Classified + principle #6 forbids it |
-| Agent says "done" without testing | Nothing stops it | Pre-completion audit catches it |
-| Agent asks 5 questions at once | Nothing stops it | Principle #3 flagges it |
-| Agent changes variable name "while there" | Nothing stops it | Principle #6 catches scope creep |
-| Agent claims confidence without checking | Nothing stops it | Confidence gate (≥90%) enforced |
-| Agent uses the same bad excuse twice | Nothing stops it | Mistake Log blocks repeats |
-| User says "你又偷懒了" | No special behavior | Immediate retrospective |
-| Three consecutive denials | Circuit breaker trips | Circuit breaker trips |
-| Cross-session trend | Not tracked | discipline.json shows streak |
+| Scenario | Official Auto Mode | auto-mode skill only | thinking-workflow only | Both (skill + memory) |
+|----------|-------------------|---------------------|----------------------|----------------------|
+| `rm -rf /` | Blocked | Blocked by hook | Agent refuses (principle) | Blocked by hook |
+| `curl \| sh` | Blocked | Blocked by hook | Agent refuses | Blocked by hook |
+| Tool-call-level safety classification | Sonnet 4.6 classifier | 5-dimension + hook patterns | Agent internal judgment | 5-dimension + hook + principles |
+| Tier 2 (file edit) coverage | **No** — 36.8% bypass | **Yes** — all tools | Agent discretion only | **Yes** — all tools |
+| Agent says "done" without testing | Nothing stops it | Nothing stops it | Pre-completion audit catches | Pre-completion audit catches |
+| Agent asks 5 questions at once | Nothing stops it | Nothing stops it | Principle #3 blocks | Principle #3 blocks |
+| Agent touches file outside scope | Classifier may miss it | Skill may classify ALLOW | Principle #6 forbids | Skill + principle double-check |
+| Agent uses same bad excuse twice | Nothing stops it | Nothing stops it | Mistake Log blocks repeats | Mistake Log blocks repeats |
+| Agent credential-borrows | Block rules only | Confused deputy detection | Principle forbids | Detected + forbidden |
+| User says "你又偷懒了" | No behavior | No behavior | Immediate retrospective | Immediate retrospective |
+| Cross-session discipline trend | Not tracked | Not tracked | discipline.json tracked | discipline.json tracked |
+| Circuit breaker | Remote (GrowthBook) | Local (3/20 threshold) | None | Local breaker |
+| Prompt injection defense | Server-side probe | Hook pattern only | None | Hook pattern only |
+| Subagent monitoring | Dual check | Pre-delegation only | Agent discretion | Pre-delegation + principle |
+| UI/UX design enforcement | None | None | L2/L3 pipeline includes it | L2/L3 pipeline includes it |
+| Cost | API calls per classification | Zero | Zero | Zero |
+| Latency | AI inference time | Zero (regex) | Zero | Zero (regex) |
+| **Gap coverage** | Baseline | Covers Tier 2 blind spot | Covers behavioral gaps | **Complete coverage** |
 
 **Bottom line:** auto-mode handles *what you can and can't do.* thinking-workflow handles *how you do it.* One without the other leaves a gap.
 
